@@ -1,31 +1,67 @@
-
-}let mediaRecorder;
+let mediaRecorder;
 let audioChunks = [];
+
+let recognition;
+let recognitionSupported = false;
+
 let timerInterval;
 let remainingTime = 60;
-let recordingStartTime;
-let audioURL = null;
+let testRunning = false;
+
+let recognizedText = "";
+
+
+// ===============================
+// START TEST
+// ===============================
 
 async function startTest() {
 
+    if (testRunning) return;
+
+    const status = document.getElementById("recordingStatus");
+
     try {
 
-        // Microphone permission
-        const stream = await navigator.mediaDevices.getUserMedia({
-            audio: true
-        });
+        // -------------------------------
+        // Microphone
+        // -------------------------------
 
-        // Check browser recording support
-        if (!window.MediaRecorder) {
-            alert("This browser does not support audio recording.");
+        if (!navigator.mediaDevices ||
+            !navigator.mediaDevices.getUserMedia) {
+
+            status.textContent =
+                "❌ Microphone recording is not supported.";
+
             return;
         }
+
+        const stream =
+            await navigator.mediaDevices.getUserMedia({
+                audio: true
+            });
+
+
+        // -------------------------------
+        // Media Recorder
+        // -------------------------------
+
+        if (!window.MediaRecorder) {
+
+            status.textContent =
+                "❌ Audio recording is not supported.";
+
+            stream.getTracks().forEach(track => track.stop());
+
+            return;
+        }
+
 
         mediaRecorder = new MediaRecorder(stream);
 
         audioChunks = [];
 
-        // Recording data
+
         mediaRecorder.ondataavailable = function(event) {
 
             if (event.data.size > 0) {
@@ -34,113 +70,260 @@ async function startTest() {
 
         };
 
-        // When recording stops
+
         mediaRecorder.onstop = function() {
 
-            const audioBlob = new Blob(audioChunks, {
-                type: "audio/webm"
-            });
+            const audioBlob =
+                new Blob(audioChunks, {
+                    type: mediaRecorder.mimeType
+                });
 
-            audioURL = URL.createObjectURL(audioBlob);
+            const audioURL =
+                URL.createObjectURL(audioBlob);
 
-            // Create audio player
-            let audioPlayer = document.getElementById("audioPlayer");
+            const audioPlayer =
+                document.getElementById("audioPlayer");
 
-            if (!audioPlayer) {
-
-                audioPlayer = document.createElement("audio");
-
-                audioPlayer.id = "audioPlayer";
-
-                audioPlayer.controls = true;
-
-                audioPlayer.style.width = "100%";
-
-                document.body.appendChild(audioPlayer);
+            if (audioPlayer) {
+                audioPlayer.src = audioURL;
             }
-
-            audioPlayer.src = audioURL;
-
-            // Recording proof
-            document.getElementById("recordingStatus").textContent =
-                "✅ Recording completed — Play the audio below to verify.";
-
-            document.getElementById("recordingStatus").style.color = "green";
 
         };
 
 
-        // START RECORDING
+        // -------------------------------
+        // Hindi Speech Recognition
+        // -------------------------------
+
+        const SpeechRecognition =
+            window.SpeechRecognition ||
+            window.webkitSpeechRecognition;
+
+
+        if (SpeechRecognition) {
+
+            recognitionSupported = true;
+
+            recognition =
+                new SpeechRecognition();
+
+            recognition.lang = "hi-IN";
+
+            recognition.continuous = true;
+
+            recognition.interimResults = true;
+
+
+            recognition.onresult = function(event) {
+
+                let finalText = "";
+                let interimText = "";
+
+
+                for (
+                    let i = event.resultIndex;
+                    i < event.results.length;
+                    i++
+                ) {
+
+                    const transcript =
+                        event.results[i][0].transcript;
+
+                    if (event.results[i].isFinal) {
+
+                        finalText += transcript + " ";
+
+                    }
+                    else {
+
+                        interimText += transcript;
+
+                    }
+
+                }
+
+
+                recognizedText += finalText;
+
+                showRecognizedText(
+                    recognizedText + interimText
+                );
+
+                updateWordCount(
+                    recognizedText + interimText
+                );
+
+            };
+
+
+            recognition.onerror = function(event) {
+
+                console.log(
+                    "Speech recognition error:",
+                    event.error
+                );
+
+            };
+
+
+            recognition.onend = function() {
+
+                // Don't restart after test has ended
+                if (testRunning) {
+
+                    try {
+                        recognition.start();
+                    }
+                    catch (e) {}
+
+                }
+
+            };
+
+        }
+
+
+        // -------------------------------
+        // Start Recording
+        // -------------------------------
+
         mediaRecorder.start();
 
-        recordingStartTime = Date.now();
+        testRunning = true;
+
+        recognizedText = "";
 
         remainingTime = 60;
+
 
         document.getElementById("startBtn").disabled = true;
 
         document.getElementById("stopBtn").disabled = false;
 
 
-        // Visible recording proof
-        document.getElementById("recordingStatus").textContent =
-            "🔴 RECORDING NOW...";
+        status.textContent =
+            "🔴 RECORDING + READING DETECTION ON";
 
-        document.getElementById("recordingStatus").style.color = "red";
+        status.style.color = "red";
+
+
+        // Start speech recognition
+
+        if (recognitionSupported) {
+
+            try {
+                recognition.start();
+            }
+            catch (e) {}
+
+        }
+        else {
+
+            status.textContent =
+                "🔴 RECORDING ON — Speech recognition unavailable";
+
+        }
 
 
         updateTimer();
 
 
-        // 1 minute countdown
-        timerInterval = setInterval(function() {
+        // -------------------------------
+        // 60 SECOND TIMER
+        // -------------------------------
 
-            remainingTime--;
+        timerInterval =
+            setInterval(function() {
 
-            updateTimer();
+                remainingTime--;
 
-            if (remainingTime <= 0) {
+                updateTimer();
 
-                stopTest();
 
-            }
+                if (remainingTime <= 0) {
 
-        }, 1000);
+                    stopTest();
+
+                }
+
+            }, 1000);
+
 
     }
-
     catch (error) {
 
         console.error(error);
 
-        alert(
-            "Microphone access नहीं मिला। Browser में microphone permission Allow करें."
-        );
+        status.textContent =
+            "❌ Microphone permission नहीं मिली.";
+
+        status.style.color = "red";
 
     }
 
 }
 
 
+// ===============================
+// TIMER
+// ===============================
+
 function updateTimer() {
 
-    let minutes = Math.floor(remainingTime / 60);
+    let minutes =
+        Math.floor(remainingTime / 60);
 
-    let seconds = remainingTime % 60;
+    let seconds =
+        remainingTime % 60;
 
-    minutes = String(minutes).padStart(2, "0");
 
-    seconds = String(seconds).padStart(2, "0");
+    minutes =
+        String(minutes).padStart(2, "0");
 
-    document.getElementById("time").textContent =
-        `${minutes}:${seconds}`;
+    seconds =
+        String(seconds).padStart(2, "0");
+
+
+    const timer =
+        document.getElementById("time");
+
+
+    if (timer) {
+
+        timer.textContent =
+            `${minutes}:${seconds}`;
+
+    }
 
 }
 
 
+// ===============================
+// STOP TEST
+// ===============================
+
 function stopTest() {
 
+    if (!testRunning) return;
+
+    testRunning = false;
+
     clearInterval(timerInterval);
+
+
+    // Stop speech recognition
+
+    if (recognition) {
+
+        try {
+            recognition.stop();
+        }
+        catch (e) {}
+
+    }
+
+
+    // Stop recording
 
     if (mediaRecorder &&
         mediaRecorder.state !== "inactive") {
@@ -153,10 +336,152 @@ function stopTest() {
 
     }
 
+
     document.getElementById("startBtn").disabled = false;
 
     document.getElementById("stopBtn").disabled = true;
 
-    document.getElementById("time").textContent = "00:00";
+
+    document.getElementById("time").textContent =
+        "00:00";
+
+
+    // Calculate final result
+
+    calculateFinalResult();
+
+
+    const status =
+        document.getElementById("recordingStatus");
+
+
+    status.textContent =
+        "✅ Test completed — Recording saved for playback.";
+
+    status.style.color = "green";
+
+}
+
+
+// ===============================
+// SHOW RECOGNIZED TEXT
+// ===============================
+
+function showRecognizedText(text) {
+
+    let box =
+        document.getElementById("recognizedText");
+
+
+    if (box) {
+
+        box.textContent = text;
+
+    }
+
+}
+
+
+// ===============================
+// WORD COUNT
+// ===============================
+
+function getWords(text) {
+
+    return text
+        .trim()
+        .split(/\s+/)
+        .filter(word => word.length > 0);
+
+}
+
+
+function updateWordCount(text) {
+
+    const words =
+        getWords(text);
+
+
+    const wordsRead =
+        document.getElementById("wordsRead");
+
+
+    if (wordsRead) {
+
+        wordsRead.textContent =
+            words.length;
+
+    }
+
+
+    // Live WPM
+    // Test हमेशा 60 seconds का है
+
+    const wpm =
+        words.length;
+
+
+    const wpmBox =
+        document.getElementById("wpm");
+
+
+    if (wpmBox) {
+
+        wpmBox.textContent =
+            wpm;
+
+    }
+
+}
+
+
+// ===============================
+// FINAL RESULT
+// ===============================
+
+function calculateFinalResult() {
+
+    const words =
+        getWords(recognizedText);
+
+
+    const wordsRead =
+        words.length;
+
+
+    // Because test duration is exactly 1 minute
+    const wpm =
+        wordsRead;
+
+
+    const wordsReadBox =
+        document.getElementById("wordsRead");
+
+
+    const wpmBox =
+        document.getElementById("wpm");
+
+
+    if (wordsReadBox) {
+
+        wordsReadBox.textContent =
+            wordsRead;
+
+    }
+
+
+    if (wpmBox) {
+
+        wpmBox.textContent =
+            wpm;
+
+    }
+
+
+    console.log("Recognized Text:", recognizedText);
+
+    console.log("Words Read:", wordsRead);
+
+    console.log("WPM:", wpm);
 
 }
