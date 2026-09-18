@@ -2,12 +2,13 @@ let mediaRecorder = null;
 let audioChunks = [];
 
 let recognition = null;
-
 let testRunning = false;
-let startTime = 0;
-let timerInterval = null;
 
 let recognizedText = "";
+let finalWordCount = 0;
+
+let startTime = 0;
+let timerInterval = null;
 
 
 // ===============================
@@ -21,26 +22,17 @@ async function startTest() {
     const status =
         document.getElementById("recordingStatus");
 
-    // Hindi Speech Recognition check
     const SpeechRecognition =
         window.SpeechRecognition ||
         window.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-
         status.textContent =
-            "❌ Hindi Speech Recognition इस browser में उपलब्ध नहीं है। Chrome में खोलें।";
-
-        status.style.color = "red";
+            "❌ Hindi speech recognition इस browser में उपलब्ध नहीं है।";
         return;
     }
 
-
     try {
-
-        // ===============================
-        // MICROPHONE
-        // ===============================
 
         const stream =
             await navigator.mediaDevices.getUserMedia({
@@ -48,61 +40,52 @@ async function startTest() {
             });
 
 
-        // ===============================
-        // AUDIO RECORDING
-        // ===============================
+        // =========================
+        // RECORDING
+        // =========================
 
         mediaRecorder =
             new MediaRecorder(stream);
 
         audioChunks = [];
 
+        mediaRecorder.ondataavailable = function(e) {
 
-        mediaRecorder.ondataavailable =
-            function(event) {
+            if (e.data.size > 0) {
+                audioChunks.push(e.data);
+            }
 
-                if (event.data.size > 0) {
-                    audioChunks.push(event.data);
-                }
-
-            };
+        };
 
 
-        mediaRecorder.onstop =
-            function() {
+        mediaRecorder.onstop = function() {
 
-                const blob =
-                    new Blob(audioChunks, {
-                        type: mediaRecorder.mimeType ||
-                              "audio/webm"
-                    });
+            const blob =
+                new Blob(audioChunks, {
+                    type: mediaRecorder.mimeType ||
+                          "audio/webm"
+                });
 
+            const url =
+                URL.createObjectURL(blob);
 
-                const audioURL =
-                    URL.createObjectURL(blob);
+            const player =
+                document.getElementById("audioPlayer");
 
+            if (player) {
+                player.src = url;
+                player.style.display = "block";
+            }
 
-                const player =
-                    document.getElementById("audioPlayer");
-
-
-                if (player) {
-
-                    player.src = audioURL;
-                    player.style.display = "block";
-
-                }
-
-            };
+        };
 
 
-        // Recording START
         mediaRecorder.start();
 
 
-        // ===============================
+        // =========================
         // SPEECH RECOGNITION
-        // ===============================
+        // =========================
 
         recognition =
             new SpeechRecognition();
@@ -114,133 +97,116 @@ async function startTest() {
         recognition.interimResults = true;
 
 
-        recognition.onresult =
-            function(event) {
+        recognition.onstart = function() {
 
-                let finalPart = "";
-                let interimPart = "";
+            testRunning = true;
 
+            status.textContent =
+                "🔴 RECORDING — पढ़ना शुरू करें";
 
-                for (
-                    let i = event.resultIndex;
-                    i < event.results.length;
-                    i++
-                ) {
+            status.style.color = "red";
 
-                    const text =
-                        event.results[i][0].transcript;
+        };
 
 
-                    if (event.results[i].isFinal) {
+        recognition.onresult = function(event) {
 
-                        finalPart += text + " ";
-
-                    }
-                    else {
-
-                        interimPart += text;
-
-                    }
-
-                }
+            let finalText = "";
+            let interimText = "";
 
 
-                // केवल final words save करें
-                recognizedText += finalPart;
+            for (
+                let i = event.resultIndex;
+                i < event.results.length;
+                i++
+            ) {
+
+                const transcript =
+                    event.results[i][0].transcript;
 
 
-                // Live speech दिखाएँ
-                showRecognizedText(
-                    recognizedText + interimPart
-                );
+                if (event.results[i].isFinal) {
 
+                    finalText += transcript + " ";
 
-                // Actual words count
-                updateWPM(
-                    recognizedText + interimPart
-                );
+                } else {
 
-            };
-
-
-        recognition.onerror =
-            function(event) {
-
-                console.log(
-                    "Speech recognition:",
-                    event.error
-                );
-
-                // Speech error होने पर
-                // recording बंद नहीं होगी
-
-                if (event.error === "not-allowed") {
-
-                    status.textContent =
-                        "⚠️ Microphone/Speech permission Allow करें।";
+                    interimText += transcript;
 
                 }
 
-            };
+            }
 
 
-        recognition.onend =
-            function() {
+            // केवल FINAL speech को permanently save करें
+            if (finalText.trim() !== "") {
 
-                // Speech recognition अपने आप बंद हो जाए
-                // तो recording चलती रहेगी
+                recognizedText += finalText;
 
-                if (testRunning) {
+                finalWordCount =
+                    countWords(recognizedText);
 
-                    try {
-                        recognition.start();
-                    }
-                    catch (e) {}
+                updateResult(finalWordCount);
 
+            }
+
+
+            // Screen पर speech दिखाएँ
+            showSpeech(
+                recognizedText + interimText
+            );
+
+        };
+
+
+        recognition.onerror = function(event) {
+
+            console.log(
+                "Recognition error:",
+                event.error
+            );
+
+            // Error होने पर recording बंद नहीं होगी
+
+        };
+
+
+        recognition.onend = function() {
+
+            if (testRunning) {
+
+                try {
+                    recognition.start();
                 }
+                catch (e) {}
 
-            };
+            }
+
+        };
 
 
-        // Speech recognition START
         recognition.start();
 
 
-        // ===============================
-        // TEST START
-        // ===============================
-
-        testRunning = true;
+        // =========================
+        // TIMER
+        // =========================
 
         startTime = Date.now();
 
-        recognizedText = "";
-
         remainingTime = 60;
-
 
         document.getElementById(
             "startBtn"
         ).disabled = true;
-
 
         document.getElementById(
             "stopBtn"
         ).disabled = false;
 
 
-        status.textContent =
-            "🔴 RECORDING + WPM TEST RUNNING";
-
-        status.style.color = "red";
-
-
         updateTimer();
 
-
-        // ===============================
-        // EXACT 60 SECOND TIMER
-        // ===============================
 
         timerInterval =
             setInterval(function() {
@@ -250,24 +216,18 @@ async function startTest() {
                         (Date.now() - startTime) / 1000
                     );
 
-
                 remainingTime =
                     60 - elapsed;
-
 
                 if (remainingTime < 0) {
                     remainingTime = 0;
                 }
 
-
                 updateTimer();
 
 
-                // Exactly 60 seconds
                 if (elapsed >= 60) {
-
                     stopTest();
-
                 }
 
             }, 200);
@@ -291,7 +251,125 @@ async function startTest() {
 
 
 // ===============================
-// TIMER DISPLAY
+// WORD COUNT
+// ===============================
+
+function countWords(text) {
+
+    if (!text) {
+        return 0;
+    }
+
+
+    // Hindi punctuation हटाएँ
+    const cleanText =
+        text
+        .replace(/[।॥,!?;:"“”‘’(){}\[\]—–\-]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+
+    if (!cleanText) {
+        return 0;
+    }
+
+
+    return cleanText
+        .split(" ")
+        .filter(word => word.trim() !== "")
+        .length;
+
+}
+
+
+// ===============================
+// UPDATE RESULT
+// ===============================
+
+function updateResult(words) {
+
+    const wordsBox =
+        document.getElementById("wordsRead");
+
+    const wpmBox =
+        document.getElementById("wpm");
+
+
+    if (wordsBox) {
+        wordsBox.textContent = words;
+    }
+
+
+    /*
+       Test = 60 seconds
+
+       इसलिए:
+       10 words = 10 WPM
+       20 words = 20 WPM
+       50 words = 50 WPM
+    */
+
+    if (wpmBox) {
+        wpmBox.textContent = words;
+    }
+
+
+    console.log(
+        "FINAL WORD COUNT:",
+        words
+    );
+
+}
+
+
+// ===============================
+// DISPLAY SPEECH
+// ===============================
+
+function showSpeech(text) {
+
+    let box =
+        document.getElementById(
+            "recognizedText"
+        );
+
+
+    if (!box) {
+
+        box =
+            document.createElement("div");
+
+        box.id =
+            "recognizedText";
+
+        box.style.marginTop =
+            "15px";
+
+        box.style.padding =
+            "15px";
+
+        box.style.border =
+            "1px solid #ccc";
+
+        box.style.fontSize =
+            "18px";
+
+        document
+            .querySelector(".results")
+            .appendChild(box);
+
+    }
+
+
+    box.innerHTML =
+        "<b>🗣️ Speech Detected:</b><br>" +
+        text;
+
+}
+
+
+// ===============================
+// TIMER
 // ===============================
 
 function updateTimer() {
@@ -310,110 +388,9 @@ function updateTimer() {
         String(seconds).padStart(2, "0");
 
 
-    document.getElementById("time").textContent =
+    document.getElementById("time")
+        .textContent =
         minutes + ":" + seconds;
-
-}
-
-
-// ===============================
-// COUNT WORDS + WPM
-// ===============================
-
-function updateWPM(text) {
-
-    const words = getWords(text);
-
-    const count = words.length;
-
-    const wordsRead =
-        document.getElementById("wordsRead");
-
-    const wpm =
-        document.getElementById("wpm");
-
-    if (wordsRead) {
-        wordsRead.textContent = count;
-    }
-
-    if (wpm) {
-        wpm.textContent = count;
-    }
-
-    console.log("Words detected:", count);
-    console.log("Detected words:", words);
-}
-
-// ===============================
-// WORD SPLIT
-// ===============================
-
-function getWords(text) {
-
-    if (!text || !text.trim()) {
-        return [];
-    }
-
-    // Hindi punctuation हटाएँ
-    text = text
-        .replace(/[।॥,!?;:"“”‘’(){}\[\]—–\-]/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-
-    if (!text) {
-        return [];
-    }
-
-    return text.split(" ");
-}
-
-// ===============================
-// SHOW RECOGNIZED SPEECH
-// ===============================
-
-function showRecognizedText(text) {
-
-    let box =
-        document.getElementById(
-            "recognizedText"
-        );
-
-
-    if (!box) {
-
-        box =
-            document.createElement("div");
-
-        box.id =
-            "recognizedText";
-
-
-        box.style.marginTop =
-            "15px";
-
-
-        box.style.padding =
-            "15px";
-
-
-        box.style.border =
-            "1px solid #ccc";
-
-
-        box.style.fontSize =
-            "18px";
-
-
-        document
-            .querySelector(".results")
-            .appendChild(box);
-
-    }
-
-
-    box.innerHTML =
-        "<b>🗣️ Speech Detected:</b><br>" +
-        text;
 
 }
 
@@ -426,17 +403,12 @@ function stopTest() {
 
     if (!testRunning) return;
 
-
     testRunning = false;
-
 
     clearInterval(timerInterval);
 
 
-    // -------------------------------
-    // Stop Speech Recognition
-    // -------------------------------
-
+    // Stop speech
     if (recognition) {
 
         try {
@@ -447,17 +419,13 @@ function stopTest() {
     }
 
 
-    // -------------------------------
-    // Stop Audio Recording
-    // -------------------------------
-
+    // Stop recording
     if (
         mediaRecorder &&
         mediaRecorder.state !== "inactive"
     ) {
 
         mediaRecorder.stop();
-
 
         mediaRecorder.stream
             .getTracks()
@@ -468,33 +436,12 @@ function stopTest() {
     }
 
 
-    // -------------------------------
-    // Final Result
-    // -------------------------------
+    // Final count
+    finalWordCount =
+        countWords(recognizedText);
 
-    const words =
-        getWords(recognizedText);
+    updateResult(finalWordCount);
 
-
-    const finalWords =
-        words.length;
-
-
-    document.getElementById(
-        "wordsRead"
-    ).textContent =
-        finalWords;
-
-
-    document.getElementById(
-        "wpm"
-    ).textContent =
-        finalWords;
-
-
-    // -------------------------------
-    // UI
-    // -------------------------------
 
     document.getElementById(
         "startBtn"
@@ -516,28 +463,48 @@ function stopTest() {
             "recordingStatus"
         );
 
-
     status.textContent =
-        "✅ Test complete — Recording नीचे Play करें।";
+        "✅ Test complete — Recording तैयार है।";
 
     status.style.color = "green";
 
 
     console.log(
-        "FINAL SPEECH:",
-        recognizedText
-    );
-
-
-    console.log(
-        "FINAL WORDS:",
-        finalWords
-    );
-
-
-    console.log(
-        "FINAL WPM:",
-        finalWords
+        "Total words actually detected:",
+        finalWordCount
     );
 
 }
+function setTotalWords() {
+
+    const passage =
+        document.getElementById("passage");
+
+    const totalWords =
+        document.getElementById("totalWords");
+
+    if (!passage || !totalWords) return;
+
+    const text =
+        passage.value || passage.textContent;
+
+    const cleanText =
+        text
+        .replace(/[।॥,!?;:"“”‘’(){}\[\]—–\-]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    const count =
+        cleanText
+        ? cleanText.split(" ").length
+        : 0;
+
+    totalWords.textContent = count;
+}
+
+
+// Page खुलते ही Total Words दिखाएँ
+window.addEventListener(
+    "load",
+    setTotalWords
+);
