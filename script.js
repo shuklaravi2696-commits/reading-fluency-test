@@ -322,34 +322,27 @@ function updateTimer() {
 
 function updateWPM(text) {
 
-    const words =
-        getWords(text);
+    const words = getWords(text);
 
+    const count = words.length;
 
-    const count =
-        words.length;
+    const wordsRead =
+        document.getElementById("wordsRead");
 
+    const wpm =
+        document.getElementById("wpm");
 
-    document.getElementById(
-        "wordsRead"
-    ).textContent = count;
+    if (wordsRead) {
+        wordsRead.textContent = count;
+    }
 
+    if (wpm) {
+        wpm.textContent = count;
+    }
 
-    /*
-       Test duration = 1 minute
-
-       इसलिए:
-       20 words spoken = 20 WPM
-       50 words spoken = 50 WPM
-       94 passage words ≠ 94 WPM
-    */
-
-    document.getElementById(
-        "wpm"
-    ).textContent = count;
-
+    console.log("Words detected:", count);
+    console.log("Detected words:", words);
 }
-
 
 // ===============================
 // WORD SPLIT
@@ -357,20 +350,22 @@ function updateWPM(text) {
 
 function getWords(text) {
 
-    if (!text.trim()) {
+    if (!text || !text.trim()) {
         return [];
     }
 
+    // Hindi punctuation हटाएँ
+    text = text
+        .replace(/[।॥,!?;:"“”‘’(){}\[\]—–\-]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
 
-    return text
-        .trim()
-        .split(/\s+/)
-        .filter(
-            word => word.length > 0
-        );
+    if (!text) {
+        return [];
+    }
 
+    return text.split(" ");
 }
-
 
 // ===============================
 // SHOW RECOGNIZED SPEECH
