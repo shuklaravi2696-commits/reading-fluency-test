@@ -1,1 +1,44 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reading Fluency Test</title>
+    <link rel="stylesheet" href="style.css">
+</head>
 
+<body>
+
+    <div class="container">
+
+        <h1>📖 Reading Fluency Test</h1>
+
+        <label>Reading Passage</label>
+
+        <textarea id="passage">राम सुबह जल्दी उठता है। वह तैयार होकर विद्यालय जाता है। विद्यालय में वह अपने मित्रों के साथ पढ़ाई करता है। उसे नई बातें सीखना बहुत पसंद है।</textarea>
+
+        <div class="info">
+            <p>Total Words: <span id="totalWords">0</span></p>
+            <p>Reading Time: <span id="time">00:00</span></p>
+        </div>
+
+        <button id="startBtn" onclick="startTest()">🎤 Start Reading</button>
+
+        <button id="stopBtn" onclick="stopTest()" disabled>⏹ Stop Reading</button>
+
+        <div class="result">
+
+            <h2>Result</h2>
+
+            <p>Words Read: <span id="wordsRead">0</span></p>
+
+            <p>Words Per Minute: <span id="wpm">0</span></p>
+
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
