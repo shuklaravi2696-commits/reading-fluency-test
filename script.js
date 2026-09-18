@@ -1,26 +1,19 @@
+
 let startTime;
 let timerInterval;
+let remainingTime = 60;
 
 let mediaRecorder;
 let audioChunks = [];
-
-function countWords(text) {
-    return text.trim()
-        .split(/\s+/)
-        .filter(word => word.length > 0)
-        .length;
-}
 
 async function startTest() {
 
     try {
 
-        // Ask for microphone permission
         const stream = await navigator.mediaDevices.getUserMedia({
             audio: true
         });
 
-        // Start recording
         mediaRecorder = new MediaRecorder(stream);
 
         audioChunks = [];
@@ -33,33 +26,40 @@ async function startTest() {
 
         mediaRecorder.start();
 
-        // Start timer
         startTime = Date.now();
+        remainingTime = 60;
 
         document.getElementById("startBtn").disabled = true;
         document.getElementById("stopBtn").disabled = false;
 
-        timerInterval = setInterval(updateTimer, 1000);
+        updateTimer();
 
-        console.log("Recording started");
+        timerInterval = setInterval(function() {
+
+            remainingTime--;
+
+            updateTimer();
+
+            if (remainingTime <= 0) {
+                stopTest();
+            }
+
+        }, 1000);
 
     } catch (error) {
 
-        alert("Microphone permission is required to start the test.");
+        alert("Microphone permission is required.");
 
         console.error(error);
     }
 }
 
+
 function updateTimer() {
 
-    let elapsed = Math.floor(
-        (Date.now() - startTime) / 1000
-    );
+    let minutes = Math.floor(remainingTime / 60);
 
-    let minutes = Math.floor(elapsed / 60);
-
-    let seconds = elapsed % 60;
+    let seconds = remainingTime % 60;
 
     minutes = String(minutes).padStart(2, "0");
     seconds = String(seconds).padStart(2, "0");
@@ -67,6 +67,7 @@ function updateTimer() {
     document.getElementById("time").textContent =
         `${minutes}:${seconds}`;
 }
+
 
 function stopTest() {
 
@@ -76,37 +77,15 @@ function stopTest() {
 
         mediaRecorder.stop();
 
-        // Stop microphone
         mediaRecorder.stream.getTracks().forEach(track => {
             track.stop();
         });
     }
 
-    let elapsedSeconds =
-        (Date.now() - startTime) / 1000;
-
-    let passage =
-        document.getElementById("passage").value;
-
-    let words =
-        countWords(passage);
-
-    let minutes =
-        elapsedSeconds / 60;
-
-    let wpm =
-        minutes > 0
-            ? Math.round(words / minutes)
-            : 0;
-
-    document.getElementById("wordsRead").textContent =
-        words;
-
-    document.getElementById("wpm").textContent =
-        wpm;
-
     document.getElementById("startBtn").disabled = false;
     document.getElementById("stopBtn").disabled = true;
+
+    document.getElementById("time").textContent = "00:00";
 
     console.log("Recording stopped");
 }
