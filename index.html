@@ -1,48 +1,121 @@
 <!DOCTYPE html>
 <html lang="hi">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reading Fluency Test</title>
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Hindi Reading Fluency Test</title>
+
     <link rel="stylesheet" href="style.css">
+
 </head>
+
 
 <body>
 
     <div class="container">
 
-        <h1>📖 Reading Fluency Test</h1>
+        <h1>📖 Hindi Reading Fluency Test</h1>
 
-        <label>Reading Passage</label>
 
-        <textarea id="passage"> 
+        <label>
+            Reading Passage
+        </label>
 
-🐦 चिड़िया और किसान
+        <textarea id="passage" readonly>
+एक गाँव में एक किसान रहता था। उसका नाम मोहन था। उसके घर के पास एक छोटा पेड़ था। उस पेड़ पर एक प्यारी चिड़िया रहती थी। चिड़िया रोज सुबह मीठा गीत गाती थी। एक दिन तेज हवा चली और पेड़ की एक डाल टूट गई। चिड़िया का घोंसला नीचे गिर गया। मोहन ने यह देखा तो उसने घोंसला उठाकर सुरक्षित जगह रख दिया। उसने पेड़ की टूटी डाल भी बाँध दी। चिड़िया बहुत खुश हुई। अगले दिन वह फिर पेड़ पर आई और मीठा गीत गाने लगी। मोहन ने कहा, “छोटी चिड़िया, तुम्हें अब डरने की जरूरत नहीं है।” तब से दोनों अच्छे मित्र बन गए।
+        </textarea>
 
-एक गाँव में एक किसान रहता था। उसका नाम मोहन था। उसके घर के पास एक छोटा पेड़ था। उस पेड़ पर एक प्यारी चिड़िया रहती थी। चिड़िया रोज सुबह मीठा गीत गाती थी। एक दिन तेज हवा चली और पेड़ की एक डाल टूट गई। चिड़िया का घोंसला नीचे गिर गया। मोहन ने यह देखा तो उसने घोंसला उठाकर सुरक्षित जगह रख दिया। उसने पेड़ की टूटी डाल भी बाँध दी। चिड़िया बहुत खुश हुई। अगले दिन वह फिर पेड़ पर आई और मीठा गीत गाने लगी। मोहन ने कहा, “छोटी चिड़िया, तुम्हें अब डरने की जरूरत नहीं है।” तब से दोनों अच्छे मित्र बन गए।।</textarea>
 
-        <div class="info">
-            <p>Total Words: <span id="totalWords">0</span></p>
-            <p>Reading Time: <span id="time">00:00</span></p>
+        <div class="timer-box">
+
+            <div id="time">
+                01:00
+            </div>
+
         </div>
 
-        <button id="startBtn" onclick="startTest()">🎤 Start Reading</button>
 
-        <button id="stopBtn" onclick="stopTest()" disabled>⏹ Stop Reading</button>
+        <!-- Recording Status -->
 
-        <div class="result">
+        <div id="recordingStatus"
+             class="recording-status">
 
-            <h2>Result</h2>
+            ⚪ Ready to record
 
-            <p>Words Read: <span id="wordsRead">0</span></p>
+        </div>
 
-            <p>Words Per Minute: <span id="wpm">0</span></p>
+
+        <div class="buttons">
+
+            <button id="startBtn"
+                    onclick="startTest()">
+
+                🎙️ Start Reading
+
+            </button>
+
+
+            <button id="stopBtn"
+                    onclick="stopTest()"
+                    disabled>
+
+                ⛔ Stop
+
+            </button>
+
+        </div>
+
+
+        <h3>🎧 Recorded Audio</h3>
+
+        <p>
+            Recording समाप्त होने के बाद यहाँ Play करके
+            अपनी recording verify करें।
+        </p>
+
+
+        <div id="audioContainer">
+
+            <audio id="audioPlayer"
+                   controls
+                   style="width:100%;">
+
+            </audio>
+
+        </div>
+
+
+        <div class="results">
+
+            <h2>📊 Result</h2>
+
+            <p>
+                Total Words:
+                <span id="totalWords">0</span>
+            </p>
+
+            <p>
+                Words Read:
+                <span id="wordsRead">0</span>
+            </p>
+
+            <p>
+                WPM:
+                <span id="wpm">0</span>
+            </p>
 
         </div>
 
     </div>
 
+
     <script src="script.js"></script>
 
 </body>
+
 </html>
