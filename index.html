@@ -108,7 +108,20 @@
                 WPM:
                 <span id="wpm">0</span>
             </p>
+recognition.onresult = function(event) {
 
+    let currentText = "";
+
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+
+        if (event.results[i].isFinal) {
+            currentText +=
+                " " + event.results[i][0].transcript;
+        }
+    }
+
+    addRecognizedText(currentText);
+};
         </div>
 <h3>🗣️ Speech Recognized</h3>
 
@@ -124,7 +137,74 @@
 
 
     <script src="script.js"></script>
+// ===============================
+// WPM / READING SPEED CALCULATOR
+// ===============================
 
+let readingStartTime = null;
+let readingEndTime = null;
+let spokenTranscript = "";
+
+// Reading शुरू होने पर
+function startReadingTimer() {
+    readingStartTime = performance.now();
+    readingEndTime = null;
+    spokenTranscript = "";
+
+    document.getElementById("wpmResult").innerText = "Reading...";
+}
+
+// Speech Recognition से transcript मिलने पर
+function addRecognizedText(text) {
+    if (!text) return;
+
+    spokenTranscript += " " + text;
+
+    // Live word count
+    const words = spokenTranscript
+        .trim()
+        .split(/\s+/)
+        .filter(word => word.length > 0);
+
+    document.getElementById("wordCount").innerText = words.length;
+}
+
+
+// Reading समाप्त होने पर
+function stopReadingTimer() {
+
+    if (!readingStartTime) return;
+
+    readingEndTime = performance.now();
+
+    const elapsedSeconds =
+        (readingEndTime - readingStartTime) / 1000;
+
+    const elapsedMinutes = elapsedSeconds / 60;
+
+    const words = spokenTranscript
+        .trim()
+        .split(/\s+/)
+        .filter(word => word.length > 0);
+
+    const totalWords = words.length;
+
+    if (elapsedMinutes > 0 && totalWords > 0) {
+
+        const wpm = Math.round(
+            totalWords / elapsedMinutes
+        );
+
+        document.getElementById("wpmResult").innerText =
+            wpm + " WPM";
+
+        document.getElementById("timeResult").innerText =
+            elapsedSeconds.toFixed(1) + " seconds";
+
+        document.getElementById("wordCount").innerText =
+            totalWords;
+    }
+}
 </body>
 
 </html>
