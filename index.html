@@ -3,14 +3,14 @@
 
 <head>
 
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
 
-    <title>Hindi Reading Fluency Test</title>
+<title>Hindi Reading Fluency Test</title>
 
-    <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css">
 
 </head>
 
@@ -19,168 +19,162 @@
 
 <div class="container">
 
-    <h1>📖 Hindi Reading Fluency Test</h1>
+<h1>📖 Hindi Reading Fluency Test</h1>
 
 
-    <!-- =========================
-         READING PASSAGE
-    ========================== -->
+<!-- =========================
+     READING PASSAGE
+========================== -->
 
-    <label>
-        <strong>Reading Passage</strong>
-    </label>
+<label>
+<strong>Reading Passage</strong>
+</label>
 
-    <textarea id="passage" readonly>
+<textarea id="passage" readonly>
 एक गाँव में एक किसान रहता था। उसका नाम मोहन था। उसके घर के पास एक छोटा पेड़ था। उस पेड़ पर एक प्यारी चिड़िया रहती थी। चिड़िया रोज सुबह मीठा गीत गाती थी। एक दिन तेज हवा चली और पेड़ की एक डाल टूट गई। चिड़िया का घोंसला नीचे गिर गया। मोहन ने यह देखा तो उसने घोंसला उठाकर सुरक्षित जगह रख दिया। उसने पेड़ की टूटी डाल भी बाँध दी। चिड़िया बहुत खुश हुई। अगले दिन वह फिर पेड़ पर आई और मीठा गीत गाने लगी। मोहन ने कहा, “छोटी चिड़िया, तुम्हें अब डरने की जरूरत नहीं है।” तब से दोनों अच्छे मित्र बन गए।
-    </textarea>
+</textarea>
 
 
-    <!-- =========================
-         TIMER
-    ========================== -->
+<!-- =========================
+     TIMER
+========================== -->
 
-    <div class="timer-box">
+<div class="timer-box">
 
-        <div id="time">
-            01:00
-        </div>
-
-    </div>
-
-
-    <!-- =========================
-         RECORDING STATUS
-    ========================== -->
-
-    <div id="recordingStatus"
-         class="recording-status">
-
-        ⚪ Ready to record
-
-    </div>
-
-
-    <!-- =========================
-         BUTTONS
-    ========================== -->
-
-    <div class="buttons">
-
-        <button id="startBtn"
-                onclick="startTest()">
-
-            🎙️ Start Reading
-
-        </button>
-
-
-        <button id="stopBtn"
-                onclick="stopTest()"
-                disabled>
-
-            ⛔ Stop
-
-        </button>
-
-    </div>
-
-
-    <!-- =========================
-         RECORDED AUDIO
-    ========================== -->
-
-    <h3>🎧 Recorded Audio</h3>
-
-    <p>
-        Recording समाप्त होने के बाद यहाँ Play करके
-        अपनी recording verify करें।
-    </p>
-
-    <div id="audioContainer">
-
-        <audio id="audioPlayer"
-               controls
-               style="width:100%;">
-
-        </audio>
-
-    </div>
-
-
-    <!-- =========================
-         RESULT
-    ========================== -->
-
-    <div class="results">
-
-        <h2>📊 Result</h2>
-
-        <p>
-            Total Words:
-            <span id="totalWords">0</span>
-        </p>
-
-        <p>
-            Words Read:
-            <span id="wordsRead">0</span>
-        </p>
-
-        <p>
-            Correct Words:
-            <span id="correctWords">0</span>
-        </p>
-
-        <p>
-            Reading Time:
-            <span id="readingTime">0 sec</span>
-        </p>
-
-        <p>
-            WPM:
-            <span id="wpm">0</span>
-        </p>
-
-        <p>
-            Accuracy:
-            <span id="accuracy">0%</span>
-        </p>
-
-        <p>
-            WCPM:
-            <span id="wcpm">0</span>
-        </p>
-
-    </div>
-
-
-    <!-- =========================
-         SPEECH RECOGNIZED
-    ========================== -->
-
-    <h3>🗣️ Speech Recognized</h3>
-
-    <div id="recognizedText"
-         style="
-         min-height:80px;
-         padding:15px;
-         border:1px solid #ccc;
-         margin-bottom:20px;
-         background:white;
-         ">
-
-        Speech will appear here...
-
-    </div>
+<div id="time">01:00</div>
 
 </div>
 
 
-<!-- =====================================================
-     JAVASCRIPT
-===================================================== -->
+<!-- =========================
+     RECORDING STATUS
+========================== -->
+
+<div id="recordingStatus"
+     class="recording-status">
+
+⚪ Ready to record
+
+</div>
+
+
+<!-- =========================
+     BUTTONS
+========================== -->
+
+<div class="buttons">
+
+<button id="startBtn"
+        onclick="startTest()">
+
+🎙️ Start Reading
+
+</button>
+
+
+<button id="stopBtn"
+        onclick="stopTest()"
+        disabled>
+
+⛔ Stop
+
+</button>
+
+</div>
+
+
+<!-- =========================
+     RECORDED AUDIO
+========================== -->
+
+<h3>🎧 Recorded Audio</h3>
+
+<p>
+Recording समाप्त होने के बाद यहाँ Play करके
+अपनी recording verify करें।
+</p>
+
+<div id="audioContainer">
+
+<audio id="audioPlayer"
+       controls
+       style="width:100%;">
+
+</audio>
+
+</div>
+
+
+<!-- =========================
+     RESULT
+========================== -->
+
+<div class="results">
+
+<h2>📊 Result</h2>
+
+<p>
+Total Words:
+<span id="totalWords">0</span>
+</p>
+
+<p>
+Words Read:
+<span id="wordsRead">0</span>
+</p>
+
+<p>
+Correct Words:
+<span id="correctWords">0</span>
+</p>
+
+<p>
+Reading Time:
+<span id="readingTime">0 sec</span>
+</p>
+
+<p>
+WPM:
+<span id="wpm">0</span>
+</p>
+
+<p>
+Accuracy:
+<span id="accuracy">0%</span>
+</p>
+
+<p>
+WCPM:
+<span id="wcpm">0</span>
+</p>
+
+</div>
+
+
+<!-- =========================
+     SPEECH RECOGNIZED
+========================== -->
+
+<h3>🗣️ Speech Recognized</h3>
+
+<div id="recognizedText"
+     style="
+     min-height:80px;
+     padding:15px;
+     border:1px solid #ccc;
+     margin-bottom:20px;
+     background:white;
+     ">
+
+Speech will appear here...
+
+</div>
+
+
+</div>
+
 
 <script>
-
 
 /* =====================================================
    VARIABLES
@@ -201,8 +195,6 @@ let testRunning = false;
 let stoppingTest = false;
 
 let recognizedText = "";
-
-let finalWordCount = 0;
 
 let remainingTime = 60;
 
@@ -250,13 +242,11 @@ function getWords(text) {
     const cleanText =
         normalizeText(text);
 
-
     if (!cleanText) {
 
         return [];
 
     }
-
 
     return cleanText
 
@@ -288,31 +278,19 @@ function countWords(text) {
 function setTotalWords() {
 
     const passage =
-        document.getElementById(
-            "passage"
-        );
-
+        document.getElementById("passage");
 
     const totalWords =
-        document.getElementById(
-            "totalWords"
-        );
+        document.getElementById("totalWords");
 
-
-    if (
-        !passage ||
-        !totalWords
-    ) {
+    if (!passage || !totalWords) {
 
         return;
 
     }
 
-
     totalWords.textContent =
-        countWords(
-            passage.value
-        );
+        countWords(passage.value);
 
 }
 
@@ -336,26 +314,27 @@ async function startTest() {
         );
 
 
+    /* -----------------------------------------
+       CHECK SPEECH RECOGNITION
+    ----------------------------------------- */
+
     if (!SpeechRecognition) {
 
         status.textContent =
-            "❌ Hindi Speech Recognition इस browser में उपलब्ध नहीं है। कृपया Google Chrome का उपयोग करें।";
+            "❌ इस browser में Hindi Speech Recognition उपलब्ध नहीं है। Chrome का उपयोग करें।";
 
-        status.style.color =
-            "red";
+        status.style.color = "red";
 
         return;
 
     }
 
 
-    /* =========================================
-       RESET PREVIOUS TEST
-    ========================================= */
+    /* -----------------------------------------
+       RESET
+    ----------------------------------------- */
 
     recognizedText = "";
-
-    finalWordCount = 0;
 
     remainingTime = 60;
 
@@ -400,15 +379,15 @@ async function startTest() {
 
     try {
 
+
         /* =====================================
            MICROPHONE
         ===================================== */
 
         const stream =
-            await navigator.mediaDevices
-                .getUserMedia({
-                    audio: true
-                });
+            await navigator.mediaDevices.getUserMedia({
+                audio: true
+            });
 
 
         /* =====================================
@@ -416,9 +395,7 @@ async function startTest() {
         ===================================== */
 
         mediaRecorder =
-            new MediaRecorder(
-                stream
-            );
+            new MediaRecorder(stream);
 
 
         audioChunks = [];
@@ -427,9 +404,7 @@ async function startTest() {
         mediaRecorder.ondataavailable =
             function(event) {
 
-                if (
-                    event.data.size > 0
-                ) {
+                if (event.data.size > 0) {
 
                     audioChunks.push(
                         event.data
@@ -466,15 +441,8 @@ async function startTest() {
                     );
 
 
-                if (audioPlayer) {
-
-                    audioPlayer.src =
-                        audioURL;
-
-                    audioPlayer.style.display =
-                        "block";
-
-                }
+                audioPlayer.src =
+                    audioURL;
 
             };
 
@@ -511,10 +479,8 @@ async function startTest() {
 
                 testRunning = true;
 
-
                 status.textContent =
                     "🔴 RECORDING — पढ़ना शुरू करें";
-
 
                 status.style.color =
                     "red";
@@ -525,17 +491,12 @@ async function startTest() {
         recognition.onresult =
             function(event) {
 
-                let interimText =
-                    "";
+                let interimText = "";
 
 
                 for (
-                    let i =
-                        event.resultIndex;
-
-                    i <
-                        event.results.length;
-
+                    let i = event.resultIndex;
+                    i < event.results.length;
                     i++
                 ) {
 
@@ -545,72 +506,103 @@ async function startTest() {
 
 
                     if (
-                        event.results[i]
-                            .isFinal
+                        event.results[i].isFinal
                     ) {
 
                         recognizedText +=
-                            " " +
-                            transcript;
+                            " " + transcript;
 
                     }
 
                     else {
 
                         interimText +=
-                            " " +
-                            transcript;
+                            " " + transcript;
 
                     }
 
                 }
 
 
-                finalWordCount =
+                /* -------------------------
+                   LIVE WORD COUNT
+                ------------------------- */
+
+                const words =
                     countWords(
                         recognizedText
                     );
 
 
-                updateLiveResult(
-                    finalWordCount
-                );
+                document.getElementById(
+                    "wordsRead"
+                ).textContent =
+                    words;
 
 
-                showSpeech(
+                /* -------------------------
+                   LIVE WPM
+                ------------------------- */
+
+                const elapsed =
+                    Math.max(
+                        1,
+                        (Date.now() -
+                        startTime) / 1000
+                    );
+
+
+                const liveWpm =
+                    Math.round(
+                        words /
+                        (elapsed / 60)
+                    );
+
+
+                document.getElementById(
+                    "wpm"
+                ).textContent =
+                    liveWpm;
+
+
+                /* -------------------------
+                   SHOW SPEECH
+                ------------------------- */
+
+                document.getElementById(
+                    "recognizedText"
+                ).innerHTML =
+                    "<b>🗣️ Speech Detected:</b><br>" +
                     recognizedText +
                     " " +
-                    interimText
-                );
+                    interimText;
 
             };
 
 
+        /* =====================================
+           SPEECH ERROR
+        ===================================== */
+
         recognition.onerror =
-    function(event) {
+            function(event) {
 
-        console.log(
-            "Speech recognition error:",
-            event.error
-        );
+                console.log(
+                    "Speech recognition error:",
+                    event.error
+                );
 
-        const status =
-            document.getElementById(
-                "recordingStatus"
-            );
 
-        if (status) {
+                status.textContent =
+                    "⚠️ Speech Error: " +
+                    event.error;
 
-            status.textContent =
-                "⚠️ Speech Error: " +
-                event.error;
 
-            status.style.color =
-                "orange";
+                status.style.color =
+                    "orange";
 
-        }
+            };
 
-    };
 
         /* =====================================
            AUTOMATIC RESTART
@@ -652,7 +644,7 @@ async function startTest() {
                             }
 
                         },
-                        150
+                        200
                     );
 
                 }
@@ -660,11 +652,15 @@ async function startTest() {
             };
 
 
+        /* =====================================
+           START RECOGNITION
+        ===================================== */
+
         recognition.start();
 
 
         /* =====================================
-           TIMER
+           START TIMER
         ===================================== */
 
         startTime =
@@ -727,18 +723,15 @@ async function startTest() {
                 200
             );
 
-    }
 
+    }
 
     catch (error) {
 
-        console.error(
-            error
-        );
+        console.error(error);
 
 
-        testRunning =
-            false;
+        testRunning = false;
 
 
         status.textContent =
@@ -765,94 +758,13 @@ async function startTest() {
 
 
 /* =====================================================
-   LIVE RESULT
-===================================================== */
-
-function updateLiveResult(
-    words
-) {
-
-    const wordsBox =
-        document.getElementById(
-            "wordsRead"
-        );
-
-
-    const wpmBox =
-        document.getElementById(
-            "wpm"
-        );
-
-
-    if (wordsBox) {
-
-        wordsBox.textContent =
-            words;
-
-    }
-
-
-    /*
-       Test 60 seconds का है,
-       इसलिए live WPM detected words
-       के लगभग बराबर रहेगा।
-    */
-
-    if (wpmBox) {
-
-        wpmBox.textContent =
-            words;
-
-    }
-
-}
-
-
-/* =====================================================
-   DISPLAY SPEECH
-===================================================== */
-
-function showSpeech(
-    text
-) {
-
-    const box =
-        document.getElementById(
-            "recognizedText"
-        );
-
-
-    if (!box) {
-
-        return;
-
-    }
-
-
-    box.innerHTML =
-        "<b>🗣️ Speech Detected:</b><br>" +
-        (text || "");
-
-}
-
-
-/* =====================================================
    TIMER
 ===================================================== */
 
 function updateTimer() {
 
     const timeBox =
-        document.getElementById(
-            "time"
-        );
-
-
-    if (!timeBox) {
-
-        return;
-
-    }
+        document.getElementById("time");
 
 
     const minutes =
@@ -895,12 +807,9 @@ function stopTest() {
     }
 
 
-    testRunning =
-        false;
+    testRunning = false;
 
-
-    stoppingTest =
-        true;
+    stoppingTest = true;
 
 
     clearInterval(
@@ -908,13 +817,9 @@ function stopTest() {
     );
 
 
-    timerInterval =
-        null;
-
-
-    /* =====================================
-       ACTUAL READING TIME
-    ===================================== */
+    /* -----------------------------------------
+       READING TIME
+    ----------------------------------------- */
 
     let elapsedSeconds =
         (
@@ -933,9 +838,9 @@ function stopTest() {
         );
 
 
-    /* =====================================
+    /* -----------------------------------------
        STOP SPEECH
-    ===================================== */
+    ----------------------------------------- */
 
     if (recognition) {
 
@@ -947,23 +852,20 @@ function stopTest() {
 
         catch (error) {
 
-            console.log(
-                error
-            );
+            console.log(error);
 
         }
 
     }
 
 
-    /* =====================================
+    /* -----------------------------------------
        STOP AUDIO
-    ===================================== */
+    ----------------------------------------- */
 
     if (
         mediaRecorder &&
-        mediaRecorder.state !==
-            "inactive"
+        mediaRecorder.state !== "inactive"
     ) {
 
         try {
@@ -974,9 +876,7 @@ function stopTest() {
 
         catch (error) {
 
-            console.log(
-                error
-            );
+            console.log(error);
 
         }
 
@@ -998,18 +898,18 @@ function stopTest() {
     }
 
 
-    /* =====================================
+    /* -----------------------------------------
        FINAL RESULT
-    ===================================== */
+    ----------------------------------------- */
 
     calculateFinalResult(
         elapsedSeconds
     );
 
 
-    /* =====================================
+    /* -----------------------------------------
        BUTTONS
-    ===================================== */
+    ----------------------------------------- */
 
     document.getElementById(
         "startBtn"
@@ -1057,13 +957,6 @@ function calculateFinalResult(
         );
 
 
-    if (!passage) {
-
-        return;
-
-    }
-
-
     const passageWords =
         getWords(
             passage.value
@@ -1095,9 +988,9 @@ function calculateFinalResult(
         elapsedSeconds / 60;
 
 
-    /* =====================================
+    /* -----------------------------------------
        WPM
-    ===================================== */
+    ----------------------------------------- */
 
     const wpm =
         Math.round(
@@ -1106,33 +999,29 @@ function calculateFinalResult(
         );
 
 
-    /* =====================================
+    /* -----------------------------------------
        ACCURACY
-    ===================================== */
+    ----------------------------------------- */
 
-    let accuracy =
-        0;
+    let accuracy = 0;
 
 
-    if (
-        wordsRead > 0
-    ) {
+    if (wordsRead > 0) {
 
         accuracy =
             Math.round(
                 (
                     correctWords /
                     wordsRead
-                ) *
-                100
+                ) * 100
             );
 
     }
 
 
-    /* =====================================
+    /* -----------------------------------------
        WCPM
-    ===================================== */
+    ----------------------------------------- */
 
     const wcpm =
         Math.round(
@@ -1141,9 +1030,9 @@ function calculateFinalResult(
         );
 
 
-    /* =====================================
-       DISPLAY RESULT
-    ===================================== */
+    /* -----------------------------------------
+       DISPLAY
+    ----------------------------------------- */
 
     document.getElementById(
         "totalWords"
@@ -1179,8 +1068,7 @@ function calculateFinalResult(
     document.getElementById(
         "accuracy"
     ).textContent =
-        accuracy +
-        "%";
+        accuracy + "%";
 
 
     document.getElementById(
@@ -1188,11 +1076,87 @@ function calculateFinalResult(
     ).textContent =
         wcpm;
 
-
-    console.log(
-        "========== READING RESULT =========="
-    );
+}
 
 
-    console.log(
-      
+/* =====================================================
+   CORRECT WORDS
+===================================================== */
+
+function calculateCorrectWords(
+    passageWords,
+    spokenWords
+) {
+
+    const n =
+        passageWords.length;
+
+
+    const m =
+        spokenWords.length;
+
+
+    if (
+        n === 0 ||
+        m === 0
+    ) {
+
+        return 0;
+
+    }
+
+
+    const dp =
+        Array.from(
+            {
+                length:
+                    n + 1
+            },
+
+            () =>
+                Array(
+                    m + 1
+                ).fill(0)
+
+        );
+
+
+    for (
+        let i = 1;
+        i <= n;
+        i++
+    ) {
+
+        for (
+            let j = 1;
+            j <= m;
+            j++
+        ) {
+
+            if (
+                passageWords[i - 1] ===
+                spokenWords[j - 1]
+            ) {
+
+                dp[i][j] =
+                    dp[i - 1][j - 1] +
+                    1;
+
+            }
+
+            else {
+
+                dp[i][j] =
+                    Math.max(
+                        dp[i - 1][j],
+                        dp[i][j - 1]
+                    );
+
+            }
+
+        }
+
+    }
+
+
+    return
