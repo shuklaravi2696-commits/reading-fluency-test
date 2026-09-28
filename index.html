@@ -586,33 +586,32 @@ async function startTest() {
             };
 
 
-        recognition.onerror = function(event) {
+        recognition.onerror =
+    function(event) {
 
-    console.log(
-        "Speech recognition error:",
-        event.error
-    );
+        console.log(
+            "Speech recognition error:",
+            event.error
+        );
 
-    const status =
-        document.getElementById("recordingStatus");
+        const status =
+            document.getElementById(
+                "recordingStatus"
+            );
 
-    if (status) {
+        if (status) {
 
-        status.textContent =
-            "⚠️ Speech Recognition Error: " +
-            event.error;
+            status.textContent =
+                "⚠️ Speech Error: " +
+                event.error;
 
-        status.style.color = "orange";
+            status.style.color =
+                "orange";
 
-    }
+        }
 
-};
+    };
 
-      recognition.onnomatch = function() {
-
-    console.log("Hindi speech समझ में नहीं आई।");
-
-};
         /* =====================================
            AUTOMATIC RESTART
         ===================================== */
