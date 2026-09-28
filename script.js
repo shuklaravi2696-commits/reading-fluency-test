@@ -3,12 +3,55 @@ let audioChunks = [];
 
 let recognition = null;
 let testRunning = false;
+let stoppingTest = false;
 
 let recognizedText = "";
 let finalWordCount = 0;
 
 let startTime = 0;
 let timerInterval = null;
+let remainingTime = 60;
+
+
+// ===============================
+// TEXT HELPERS
+// ===============================
+
+function normalizeText(text) {
+    return (text || "")
+        .toLowerCase()
+        .replace(/[।॥,!?;:"“”‘’(){}\[\]—–\-]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function getWords(text) {
+    const clean = normalizeText(text);
+
+    if (!clean) return [];
+
+    return clean
+        .split(/\s+/)
+        .filter(word => word.trim() !== "");
+}
+
+function countWords(text) {
+    return getWords(text).length;
+}
+
+
+// ===============================
+// TOTAL WORDS
+// ===============================
+
+function setTotalWords() {
+    const passage = document.getElementById("passage");
+    const totalWords = document.getElementById("totalWords");
+
+    if (!passage || !totalWords) return;
+
+    totalWords.textContent = countWords(passage.value);
+}
 
 
 // ===============================
@@ -28,8 +71,30 @@ async function startTest() {
 
     if (!SpeechRecognition) {
         status.textContent =
-            "❌ Hindi speech recognition इस browser में उपलब्ध नहीं है।";
+            "❌ Hindi Speech Recognition इस browser में उपलब्ध नहीं है। Google Chrome का उपयोग करें।";
+        status.style.color = "red";
         return;
+    }
+
+    // पुराने test का data साफ करें
+    recognizedText = "";
+    finalWordCount = 0;
+    remainingTime = 60;
+    stoppingTest = false;
+
+    document.getElementById("wordsRead").textContent = "0";
+    document.getElementById("correctWords").textContent = "0";
+    document.getElementById("wpm").textContent = "0";
+    document.getElementById("accuracy").textContent = "0%";
+    document.getElementById("wcpm").textContent = "0";
+    document.getElementById("readingTime").textContent = "0 sec";
+
+    const speechBox =
+        document.getElementById("recognizedText");
+
+    if (speechBox) {
+        speechBox.textContent =
+            "Speech will appear here...";
     }
 
     try {
@@ -41,7 +106,7 @@ async function startTest() {
 
 
         // =========================
-        // RECORDING
+        // AUDIO RECORDING
         // =========================
 
         mediaRecorder =
@@ -49,35 +114,46 @@ async function startTest() {
 
         audioChunks = [];
 
-        mediaRecorder.ondataavailable = function(e) {
+        mediaRecorder.ondataavailable =
+            function(event) {
 
-            if (e.data.size > 0) {
-                audioChunks.push(e.data);
-            }
+                if (event.data.size > 0) {
+                    audioChunks.push(event.data);
+                }
 
-        };
+            };
 
 
-        mediaRecorder.onstop = function() {
+        mediaRecorder.onstop =
+            function() {
 
-            const blob =
-                new Blob(audioChunks, {
-                    type: mediaRecorder.mimeType ||
-                          "audio/webm"
-                });
+                const blob =
+                    new Blob(
+                        audioChunks,
+                        {
+                            type:
+                                mediaRecorder.mimeType ||
+                                "audio/webm"
+                        }
+                    );
 
-            const url =
-                URL.createObjectURL(blob);
 
-            const player =
-                document.getElementById("audioPlayer");
+                const url =
+                    URL.createObjectURL(blob);
 
-            if (player) {
-                player.src = url;
-                player.style.display = "block";
-            }
 
-        };
+                const player =
+                    document.getElementById(
+                        "audioPlayer"
+                    );
+
+
+                if (player) {
+                    player.src = url;
+                    player.style.display = "block";
+                }
+
+            };
 
 
         mediaRecorder.start();
@@ -96,93 +172,121 @@ async function startTest() {
 
         recognition.interimResults = true;
 
-
-        recognition.onstart = function() {
-
-            testRunning = true;
-
-            status.textContent =
-                "🔴 RECORDING — पढ़ना शुरू करें";
-
-            status.style.color = "red";
-
-        };
+        recognition.maxAlternatives = 1;
 
 
-        recognition.onresult = function(event) {
+        recognition.onstart =
+            function() {
 
-            let finalText = "";
-            let interimText = "";
+                testRunning = true;
 
+                status.textContent =
+                    "🔴 RECORDING — पढ़ना शुरू करें";
 
-            for (
-                let i = event.resultIndex;
-                i < event.results.length;
-                i++
-            ) {
+                status.style.color = "red";
 
-                const transcript =
-                    event.results[i][0].transcript;
+            };
 
 
-                if (event.results[i].isFinal) {
+        recognition.onresult =
+            function(event) {
 
-                    finalText += transcript + " ";
+                let interimText = "";
 
-                } else {
 
-                    interimText += transcript;
+                for (
+                    let i = event.resultIndex;
+                    i < event.results.length;
+                    i++
+                ) {
+
+                    const transcript =
+                        event.results[i][0]
+                            .transcript;
+
+
+                    if (
+                        event.results[i].isFinal
+                    ) {
+
+                        recognizedText +=
+                            " " + transcript;
+
+                    } else {
+
+                        interimText +=
+                            " " + transcript;
+
+                    }
 
                 }
 
-            }
-
-
-            // केवल FINAL speech को permanently save करें
-            if (finalText.trim() !== "") {
-
-                recognizedText += finalText;
 
                 finalWordCount =
-                    countWords(recognizedText);
-
-                updateResult(finalWordCount);
-
-            }
+                    countWords(
+                        recognizedText
+                    );
 
 
-            // Screen पर speech दिखाएँ
-            showSpeech(
-                recognizedText + interimText
-            );
-
-        };
+                updateLiveResult(
+                    finalWordCount
+                );
 
 
-        recognition.onerror = function(event) {
+                showSpeech(
+                    recognizedText +
+                    " " +
+                    interimText
+                );
 
-            console.log(
-                "Recognition error:",
-                event.error
-            );
-
-            // Error होने पर recording बंद नहीं होगी
-
-        };
+            };
 
 
-        recognition.onend = function() {
+        recognition.onerror =
+            function(event) {
 
-            if (testRunning) {
+                console.log(
+                    "Speech recognition error:",
+                    event.error
+                );
 
-                try {
-                    recognition.start();
+            };
+
+
+        recognition.onend =
+            function() {
+
+                if (
+                    testRunning &&
+                    !stoppingTest
+                ) {
+
+                    setTimeout(
+                        function() {
+
+                            if (
+                                !testRunning ||
+                                stoppingTest
+                            ) {
+                                return;
+                            }
+
+                            try {
+                                recognition.start();
+                            }
+                            catch (error) {
+                                console.log(
+                                    "Recognition restart skipped"
+                                );
+                            }
+
+                        },
+                        150
+                    );
+
                 }
-                catch (e) {}
 
-            }
-
-        };
+            };
 
 
         recognition.start();
@@ -192,13 +296,15 @@ async function startTest() {
         // TIMER
         // =========================
 
-        startTime = Date.now();
+        startTime =
+            Date.now();
 
-        remainingTime = 60;
+        testRunning = true;
 
         document.getElementById(
             "startBtn"
         ).disabled = true;
+
 
         document.getElementById(
             "stopBtn"
@@ -208,36 +314,52 @@ async function startTest() {
         updateTimer();
 
 
+        clearInterval(
+            timerInterval
+        );
+
+
         timerInterval =
-            setInterval(function() {
+            setInterval(
+                function() {
 
-                const elapsed =
-                    Math.floor(
-                        (Date.now() - startTime) / 1000
-                    );
-
-                remainingTime =
-                    60 - elapsed;
-
-                if (remainingTime < 0) {
-                    remainingTime = 0;
-                }
-
-                updateTimer();
+                    const elapsed =
+                        Math.floor(
+                            (
+                                Date.now() -
+                                startTime
+                            ) / 1000
+                        );
 
 
-                if (elapsed >= 60) {
-                    stopTest();
-                }
+                    remainingTime =
+                        Math.max(
+                            0,
+                            60 - elapsed
+                        );
 
-            }, 200);
+
+                    updateTimer();
+
+
+                    if (
+                        elapsed >= 60
+                    ) {
+
+                        stopTest();
+
+                    }
+
+                },
+                200
+            );
 
     }
-
-
     catch (error) {
 
-        console.log(error);
+        console.error(error);
+
+        testRunning = false;
 
         status.textContent =
             "❌ Microphone शुरू नहीं हुआ: " +
@@ -245,79 +367,47 @@ async function startTest() {
 
         status.style.color = "red";
 
+        document.getElementById(
+            "startBtn"
+        ).disabled = false;
+
+        document.getElementById(
+            "stopBtn"
+        ).disabled = true;
+
     }
 
 }
 
 
 // ===============================
-// WORD COUNT
+// LIVE RESULT
 // ===============================
 
-function countWords(text) {
-
-    if (!text) {
-        return 0;
-    }
-
-
-    // Hindi punctuation हटाएँ
-    const cleanText =
-        text
-        .replace(/[।॥,!?;:"“”‘’(){}\[\]—–\-]/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-
-
-    if (!cleanText) {
-        return 0;
-    }
-
-
-    return cleanText
-        .split(" ")
-        .filter(word => word.trim() !== "")
-        .length;
-
-}
-
-
-// ===============================
-// UPDATE RESULT
-// ===============================
-
-function updateResult(words) {
+function updateLiveResult(words) {
 
     const wordsBox =
-        document.getElementById("wordsRead");
+        document.getElementById(
+            "wordsRead"
+        );
+
 
     const wpmBox =
-        document.getElementById("wpm");
+        document.getElementById(
+            "wpm"
+        );
 
 
     if (wordsBox) {
-        wordsBox.textContent = words;
+        wordsBox.textContent =
+            words;
     }
 
-
-    /*
-       Test = 60 seconds
-
-       इसलिए:
-       10 words = 10 WPM
-       20 words = 20 WPM
-       50 words = 50 WPM
-    */
 
     if (wpmBox) {
-        wpmBox.textContent = words;
+        wpmBox.textContent =
+            words;
     }
-
-
-    console.log(
-        "FINAL WORD COUNT:",
-        words
-    );
 
 }
 
@@ -328,42 +418,18 @@ function updateResult(words) {
 
 function showSpeech(text) {
 
-    let box =
+    const box =
         document.getElementById(
             "recognizedText"
         );
 
 
-    if (!box) {
-
-        box =
-            document.createElement("div");
-
-        box.id =
-            "recognizedText";
-
-        box.style.marginTop =
-            "15px";
-
-        box.style.padding =
-            "15px";
-
-        box.style.border =
-            "1px solid #ccc";
-
-        box.style.fontSize =
-            "18px";
-
-        document
-            .querySelector(".results")
-            .appendChild(box);
-
-    }
+    if (!box) return;
 
 
     box.innerHTML =
         "<b>🗣️ Speech Detected:</b><br>" +
-        text;
+        (text || "");
 
 }
 
@@ -374,23 +440,29 @@ function showSpeech(text) {
 
 function updateTimer() {
 
-    let minutes =
-        Math.floor(remainingTime / 60);
+    const timeBox =
+        document.getElementById(
+            "time"
+        );
 
-    let seconds =
+
+    if (!timeBox) return;
+
+
+    const minutes =
+        Math.floor(
+            remainingTime / 60
+        );
+
+
+    const seconds =
         remainingTime % 60;
 
 
-    minutes =
-        String(minutes).padStart(2, "0");
-
-    seconds =
+    timeBox.textContent =
+        String(minutes).padStart(2, "0") +
+        ":" +
         String(seconds).padStart(2, "0");
-
-
-    document.getElementById("time")
-        .textContent =
-        minutes + ":" + seconds;
 
 }
 
@@ -403,44 +475,81 @@ function stopTest() {
 
     if (!testRunning) return;
 
+
     testRunning = false;
 
-    clearInterval(timerInterval);
+    stoppingTest = true;
 
 
-    // Stop speech
+    clearInterval(
+        timerInterval
+    );
+
+
+    timerInterval = null;
+
+
+    let elapsedSeconds =
+        (Date.now() - startTime) / 1000;
+
+
+    elapsedSeconds =
+        Math.max(
+            0.1,
+            Math.min(
+                60,
+                elapsedSeconds
+            )
+        );
+
+
+    // Speech stop
     if (recognition) {
 
         try {
             recognition.stop();
         }
-        catch (e) {}
+        catch (error) {
+            console.log(error);
+        }
 
     }
 
 
-    // Stop recording
+    // Audio stop
     if (
         mediaRecorder &&
         mediaRecorder.state !== "inactive"
     ) {
 
-        mediaRecorder.stop();
+        try {
+            mediaRecorder.stop();
+        }
+        catch (error) {
+            console.log(error);
+        }
+
+    }
+
+
+    if (
+        mediaRecorder &&
+        mediaRecorder.stream
+    ) {
 
         mediaRecorder.stream
             .getTracks()
             .forEach(
-                track => track.stop()
+                track =>
+                    track.stop()
             );
 
     }
 
 
-    // Final count
-    finalWordCount =
-        countWords(recognizedText);
-
-    updateResult(finalWordCount);
+    calculateFinalResult(
+        elapsedSeconds
+    );
 
 
     document.getElementById(
@@ -463,48 +572,274 @@ function stopTest() {
             "recordingStatus"
         );
 
+
     status.textContent =
         "✅ Test complete — Recording तैयार है।";
 
-    status.style.color = "green";
+
+    status.style.color =
+        "green";
+
+}
+
+
+// ===============================
+// FINAL RESULT
+// ===============================
+
+function calculateFinalResult(
+    elapsedSeconds
+) {
+
+    const passage =
+        document.getElementById(
+            "passage"
+        );
+
+
+    if (!passage) return;
+
+
+    const passageWords =
+        getWords(
+            passage.value
+        );
+
+
+    const spokenWords =
+        getWords(
+            recognizedText
+        );
+
+
+    const totalWords =
+        passageWords.length;
+
+
+    const wordsRead =
+        spokenWords.length;
+
+
+    const correctWords =
+        calculateCorrectWords(
+            passageWords,
+            spokenWords
+        );
+
+
+    const minutes =
+        elapsedSeconds / 60;
+
+
+    const wpm =
+        Math.round(
+            wordsRead / minutes
+        );
+
+
+    const accuracy =
+        wordsRead > 0
+            ? Math.round(
+                (
+                    correctWords /
+                    wordsRead
+                ) * 100
+            )
+            : 0;
+
+
+    const wcpm =
+        Math.round(
+            correctWords / minutes
+        );
+
+
+    document.getElementById(
+        "totalWords"
+    ).textContent =
+        totalWords;
+
+
+    document.getElementById(
+        "wordsRead"
+    ).textContent =
+        wordsRead;
+
+
+    document.getElementById(
+        "correctWords"
+    ).textContent =
+        correctWords;
+
+
+    document.getElementById(
+        "readingTime"
+    ).textContent =
+        elapsedSeconds.toFixed(1) +
+        " sec";
+
+
+    document.getElementById(
+        "wpm"
+    ).textContent =
+        wpm;
+
+
+    document.getElementById(
+        "accuracy"
+    ).textContent =
+        accuracy + "%";
+
+
+    document.getElementById(
+        "wcpm"
+    ).textContent =
+        wcpm;
 
 
     console.log(
-        "Total words actually detected:",
-        finalWordCount
+        "Total Words:",
+        totalWords
+    );
+
+    console.log(
+        "Words Detected:",
+        wordsRead
+    );
+
+    console.log(
+        "Correct Words:",
+        correctWords
+    );
+
+    console.log(
+        "WPM:",
+        wpm
+    );
+
+    console.log(
+        "Accuracy:",
+        accuracy + "%"
+    );
+
+    console.log(
+        "WCPM:",
+        wcpm
     );
 
 }
-function setTotalWords() {
 
-    const passage =
-        document.getElementById("passage");
 
-    const totalWords =
-        document.getElementById("totalWords");
+// ===============================
+// CORRECT WORDS
+// ===============================
 
-    if (!passage || !totalWords) return;
+function calculateCorrectWords(
+    passageWords,
+    spokenWords
+) {
 
-    const text =
-        passage.value || passage.textContent;
+    const n =
+        passageWords.length;
 
-    const cleanText =
-        text
-        .replace(/[।॥,!?;:"“”‘’(){}\[\]—–\-]/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
 
-    const count =
-        cleanText
-        ? cleanText.split(" ").length
-        : 0;
+    const m =
+        spokenWords.length;
 
-    totalWords.textContent = count;
+
+    if (
+        n === 0 ||
+        m === 0
+    ) {
+        return 0;
+    }
+
+
+    let previous =
+        new Array(
+            m + 1
+        ).fill(0);
+
+
+    let current =
+        new Array(
+            m + 1
+        ).fill(0);
+
+
+    for (
+        let i = 1;
+        i <= n;
+        i++
+    ) {
+
+        current[0] = 0;
+
+
+        for (
+            let j = 1;
+            j <= m;
+            j++
+        ) {
+
+            if (
+                passageWords[i - 1] ===
+                spokenWords[j - 1]
+            ) {
+
+                current[j] =
+                    previous[j - 1] + 1;
+
+            }
+            else {
+
+                current[j] =
+                    Math.max(
+                        previous[j],
+                        current[j - 1]
+                    );
+
+            }
+
+        }
+
+
+        const temp =
+            previous;
+
+        previous =
+            current;
+
+        current =
+            temp;
+
+    }
+
+
+    return previous[m];
+
 }
 
 
-// Page खुलते ही Total Words दिखाएँ
+// ===============================
+// PAGE LOAD
+// ===============================
+
 window.addEventListener(
     "load",
-    setTotalWords
+    function() {
+
+        setTotalWords();
+
+        const timeBox =
+            document.getElementById(
+                "time"
+            );
+
+        if (timeBox) {
+            timeBox.textContent =
+                "01:00";
+        }
+
+    }
 );
